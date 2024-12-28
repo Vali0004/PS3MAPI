@@ -8,5 +8,5 @@
   * TMAPI is extremely unreliable and doesn't always work
   * PS3MAPI seems to have more features than its alternatives
 ## How can I use this?
-#### Right now? You can build the project, include c_bindings, and link PS3MAPI.lib. There is a example project on how.
-#### In the future? I'd like to make it a dynamic library, so it can be used in C# and LuaFFI.
+#### You can build the project, include c_bindings, and link PS3MAPI.lib. There is a example project on how.
+#### You also have the ability to use C# or LuaFFI, given you use the shared binaries

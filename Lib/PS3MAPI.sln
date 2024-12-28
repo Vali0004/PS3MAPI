@@ -1,14 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35521.163 d17.12
+VisualStudioVersion = 17.12.35521.163
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PS3MAPI", "PS3MAPI/PS3MAPI.vcxproj", "{9A168EE2-8B91-4A0A-89E6-EA3FC4890A8C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PS3MAPI", "PS3MAPI\PS3MAPI.vcxproj", "{9A168EE2-8B91-4A0A-89E6-EA3FC4890A8C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Library-Debug|x64 = Library-Debug|x64
+		Library-Debug|x86 = Library-Debug|x86
+		Library-Release|x64 = Library-Release|x64
+		Library-Release|x86 = Library-Release|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
@@ -17,6 +21,14 @@ Global
 		{9A168EE2-8B91-4A0A-89E6-EA3FC4890A8C}.Debug|x64.Build.0 = Debug|x64
 		{9A168EE2-8B91-4A0A-89E6-EA3FC4890A8C}.Debug|x86.ActiveCfg = Debug|Win32
 		{9A168EE2-8B91-4A0A-89E6-EA3FC4890A8C}.Debug|x86.Build.0 = Debug|Win32
+		{9A168EE2-8B91-4A0A-89E6-EA3FC4890A8C}.Library-Debug|x64.ActiveCfg = Library-Debug|x64
+		{9A168EE2-8B91-4A0A-89E6-EA3FC4890A8C}.Library-Debug|x64.Build.0 = Library-Debug|x64
+		{9A168EE2-8B91-4A0A-89E6-EA3FC4890A8C}.Library-Debug|x86.ActiveCfg = Library-Debug|Win32
+		{9A168EE2-8B91-4A0A-89E6-EA3FC4890A8C}.Library-Debug|x86.Build.0 = Library-Debug|Win32
+		{9A168EE2-8B91-4A0A-89E6-EA3FC4890A8C}.Library-Release|x64.ActiveCfg = Library-Release|x64
+		{9A168EE2-8B91-4A0A-89E6-EA3FC4890A8C}.Library-Release|x64.Build.0 = Library-Release|x64
+		{9A168EE2-8B91-4A0A-89E6-EA3FC4890A8C}.Library-Release|x86.ActiveCfg = Library-Release|Win32
+		{9A168EE2-8B91-4A0A-89E6-EA3FC4890A8C}.Library-Release|x86.Build.0 = Library-Release|Win32
 		{9A168EE2-8B91-4A0A-89E6-EA3FC4890A8C}.Release|x64.ActiveCfg = Release|x64
 		{9A168EE2-8B91-4A0A-89E6-EA3FC4890A8C}.Release|x64.Build.0 = Release|x64
 		{9A168EE2-8B91-4A0A-89E6-EA3FC4890A8C}.Release|x86.ActiveCfg = Release|Win32
