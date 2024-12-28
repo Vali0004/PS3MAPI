@@ -1,6 +1,5 @@
 #pragma once
 // Implementation of https://github.com/aldostools/webMAN-MOD/blob/36ce87a0d26f665f974d3a007a0b6313e346861b/include/ps3mapi/ps3mapi_server.h as a client
-// Why is there so little documentation????
 #include <string>
 #include <vector>
 #include <format>
@@ -15,7 +14,6 @@
 #define PS3MAPI_CMD_LEN	19
 #define PS3MAPI_MAX_LEN	383
 #define MAX_PID 16 
-#define HEX(x) std::uppercase << std::hex << (u64)(x) << std::dec
 
 enum PS3MAPIError : s8
 {

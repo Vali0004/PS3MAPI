@@ -1,6 +1,7 @@
 #include "ps3mapi.h"
 #include <cstdio>
 #include <iostream>
+#define HEX(x) std::uppercase << std::hex << (u64)(x) << std::dec
 
 int main()
 {
@@ -22,15 +23,16 @@ int main()
 	{
 		std::cout << "PID: 0" << HEX(process.pid) << " | Name: " << process.name << std::endl;
 	}
-	//u8 data[128] = {};
-	//ps3mapi.ReadMemory(0x186B99C, sizeof(data), data);
-	//memset(data, 0x00, 10);
-	//ps3mapi.WriteMemory(0x186B99C, sizeof(data), data);
-	//for (u32 i{}; i != sizeof(data); ++i)
-	//{
-	//	std::cout << HEX(data[i]);
-	//}
-	//std::cout << std::endl;
+	// Test of how to use read/write memory
+	/*u8 data[128] = {};
+	ps3mapi.ReadMemory(0x186B99C, sizeof(data), data);
+	memset(data, 0x00, 10);
+	ps3mapi.WriteMemory(0x186B99C, sizeof(data), data);
+	for (u32 i{}; i != sizeof(data); ++i)
+	{
+		std::cout << HEX(data[i]);
+	}
+	std::cout << std::endl;*/
 	ps3mapi.Disconnect();
 	return 0;
 }

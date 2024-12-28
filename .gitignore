@@ -10,4 +10,6 @@
 *.obj
 *.iobj
 *.idb
+*.log
+*.ilk
 *.recipe
