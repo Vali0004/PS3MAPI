@@ -19,9 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PS3MAPI\c_bindings.h" />
     <ClInclude Include="PS3MAPI\endian_swap.h" />
-    <ClInclude Include="PS3MAPI\http_request.h" />
+    <ClInclude Include="PS3MAPI\socket_helpers.h" />
     <ClInclude Include="PS3MAPI\ps3mapi.h" />
     <ClInclude Include="PS3MAPI\ps3mapi_commands.h" />
     <ClInclude Include="PS3MAPI\ps3mapi_types.h" />

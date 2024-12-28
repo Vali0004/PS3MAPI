@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <iostream>
 #include "ps3mapi_commands.h"
-#include "http_request.h"
+#include "socket_helpers.h"
 #include "string_helpers.h"
 #define PS3MAPI_RECV_SIZE 2048
 #define PS3MAPI_CMD_LEN	19
@@ -146,7 +146,7 @@ class Connection
 	{
 		std::string ip{};
 		s32 port{};
-		s32 socket{};
+		u64 socket{};
 		u16 GetPort()
 		{
 			return htons(port);
@@ -219,9 +219,7 @@ public:
 
 	std::pair<PS3MAPIError, int> ReceiveBufferedResponse(char* buffer, size_t size)
 	{
-		//std::cout << "Stating recv for " << size << " bytes" << std::endl;
-		int bytesRead{ recv(m_data.socket, buffer, size, 0) };
-		//std::cout << "Finish." << std::endl;
+		int bytesRead{ recv(m_data.socket, buffer, static_cast<int>(size), 0) };
 		if (bytesRead > 0)
 		{
 			return std::make_pair(PS3MAPIError_NoError, bytesRead);
@@ -421,14 +419,12 @@ public:
 		{
 			return status;
 		}
-		std::cout << "Data socket created" << std::endl;
 
 		status = m_data_socket.CreateConnection();
 		if (status != PS3MAPIError_NoError)
 		{
 			return status;
 		}
-		std::cout << "Connection established" << std::endl;
 
 		std::pair<PS3MAPIError, std::string> res{ m_connection.SendCommand("MEMORY GET {} {:X} {}", GetAttachedProcess(), address, size) };
 		if (res.first != PS3MAPIError_NoError)
@@ -461,14 +457,12 @@ public:
 		{	   
 			return status;
 		}
-		std::cout << "Data socket created" << std::endl;
 
 		status = m_data_socket.CreateConnection();
 		if (status != PS3MAPIError_NoError)
 		{
 			return status;
 		}
-		std::cout << "Connection established" << std::endl;
 
 		std::pair<PS3MAPIError, std::string> res{ m_connection.SendCommand("MEMORY SET {} {:X}", GetAttachedProcess(), address) };
 		if (res.first != PS3MAPIError_NoError)
@@ -479,7 +473,6 @@ public:
 		status = m_data_socket.SendBufferedResponse((const char*)data, size);
 		if (status != PS3MAPIError_NoError)
 		{
-			std::cout << "Failed to send data!" << std::endl;
 			return status;
 		};
 		return m_data_socket.KillConnection();

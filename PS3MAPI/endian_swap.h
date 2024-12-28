@@ -15,7 +15,6 @@ static const int test_endianess()
 #define b8_swap(v) (v)
 #define b16_swap(v) (test_endianess() ? (v) : ((v)>>8) | ((v)<<8))
 #define b32_swap(v) (test_endianess() ? (v) : ((v)>>24) | (((v)>>8) & 0xFF00) | (((v)<<8) & 0xFF0000) | ((v)<<24))
-#define b64_swap(v) (test_endianess() ? (v) : ((v)>>24) | (((v)>>8) & 0xFF00) | (((v)<<8) & 0xFF0000) | ((v)<<24))
 #define b64_swap(v, cast) (cast)(test_endianess() ? (v) : \
     (((v) >> 56) | (((v) >> 40) & 0xFF00) | (((v) >> 24) & 0xFF0000) | (((v) >> 8) & 0xFF000000) | \
     (((v) << 8) & ((cast)0xFF << 32)) | (((v) << 24) & ((cast)0xFF << 40)) | (((v) << 40) & ((cast)0xFF << 48)) | \
