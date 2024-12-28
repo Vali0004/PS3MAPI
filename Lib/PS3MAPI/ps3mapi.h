@@ -49,7 +49,7 @@ public:
 		m_data_socket = data_socket;
 	}
 
-	PS3MAPIError CreateConnection()
+	s8 CreateConnection()
 	{
 		if (m_data.socket)
 		{
@@ -77,9 +77,9 @@ public:
 	}
 
 	template <typename ...A>
-	std::pair<PS3MAPIError, std::string> SendCommand(const std::string& command, A... args)
+	std::pair<s8, std::string> SendCommand(const std::string& command, A... args)
 	{
-		PS3MAPIError status{ CreateConnection() };
+		s8 status{ CreateConnection() };
 		std::string msg{ std::vformat(command, std::make_format_args(args...)) };
 		std::string formattedCommand{ std::format("{}\r\n", msg) };
 		if (send(m_data.socket, formattedCommand.c_str(), static_cast<int>(formattedCommand.size()), 0) == SOCKET_ERROR)
@@ -89,7 +89,7 @@ public:
 		return ReceiveResponse();
 	}
 
-	PS3MAPIError SendBufferedResponse(const char* buffer, size_t size)
+	s8 SendBufferedResponse(const char* buffer, size_t size)
 	{
 		if (send(m_data.socket, buffer, static_cast<int>(size), 0) == SOCKET_ERROR)
 		{
@@ -99,7 +99,7 @@ public:
 		return PS3MAPIError_NoError;
 	}
 
-	std::pair<PS3MAPIError, int> ReceiveBufferedResponse(char* buffer, size_t size)
+	std::pair<s8, int> ReceiveBufferedResponse(char* buffer, size_t size)
 	{
 		int bytesRead{ recv(m_data.socket, buffer, static_cast<int>(size), 0) };
 		if (bytesRead > 0)
@@ -114,15 +114,15 @@ public:
 		return std::make_pair(PS3MAPIError_SocketReceiveFailed, bytesRead);
 	} 
 
-	std::pair<PS3MAPIError, std::string> ReceiveResponse()
+	std::pair<s8, std::string> ReceiveResponse()
 	{
 		char buffer[2049];
-		std::pair<PS3MAPIError, int> res{ ReceiveBufferedResponse(buffer, sizeof(buffer)) };
+		std::pair<s8, int> res{ ReceiveBufferedResponse(buffer, sizeof(buffer)) };
 		buffer[res.second] = '\0';
 		return std::make_pair(res.first, buffer);
 	}
 
-	PS3MAPIError KillConnection()
+	s8 KillConnection()
 	{
 		if (m_data.socket)
 		{
@@ -191,16 +191,16 @@ struct PS3MAPI
 		m_connection.KillSocket();
 	}
 
-	PS3MAPIError Connect()
+	s8 Connect()
 	{
 		return m_connection.CreateConnection();
 	}
-	PS3MAPIError Disconnect()
+	s8 Disconnect()
 	{
 		return m_connection.KillConnection();
 	}
 
-	std::pair<PS3MAPIError, std::vector<ConsoleInfo>> GetConsoleList()
+	std::pair<s8, std::vector<ConsoleInfo>> GetConsoleList()
 	{
 		auto ipSysInfo{ GetSystemInfo(32) };
 		if (ipSysInfo.first != PS3MAPIError_NoError)
@@ -222,10 +222,10 @@ struct PS3MAPI
 		return std::make_pair(PS3MAPIError_NoError, std::vector<ConsoleInfo>{ info });
 	}
 
-	PS3MAPIError GetCurrentProcess(u32* pid)
+	s8 GetCurrentProcess(u32* pid)
 	{
-		std::pair<PS3MAPIError, std::string> res{ m_connection.SendCommand("PROCESS GETCURRENTPID") };
-		PS3MAPIError status{ res.first };
+		std::pair<s8, std::string> res{ m_connection.SendCommand("PROCESS GETCURRENTPID") };
+		s8 status{ res.first };
 		if (res.second.find("200 ") == std::string::npos)
 		{
 			return PS3MAPIError_InvalidResponseCode;
@@ -236,10 +236,10 @@ struct PS3MAPI
 		return status;
 	}
 
-	PS3MAPIError GetProcessName(u32 pid, char* name, size_t nameSize)
+	s8 GetProcessName(u32 pid, char* name, size_t nameSize)
 	{
-		std::pair<PS3MAPIError, std::string> res{ m_connection.SendCommand("PROCESS GETNAME {}", pid) };
-		PS3MAPIError status{ res.first };
+		std::pair<s8, std::string> res{ m_connection.SendCommand("PROCESS GETNAME {}", pid) };
+		s8 status{ res.first };
 		if (res.second.find("200 ") == std::string::npos)
 		{
 			return PS3MAPIError_InvalidResponseCode;
@@ -249,11 +249,11 @@ struct PS3MAPI
 		return status;
 	}
 
-	std::pair<PS3MAPIError, std::vector<ProcessInfo>> GetAllProcesses()
+	std::pair<s8, std::vector<ProcessInfo>> GetAllProcesses()
 	{
 		std::vector<ProcessInfo> processes{};
-		std::pair<PS3MAPIError, std::string> res{ m_connection.SendCommand("PROCESS GETALLPID") };
-		PS3MAPIError status{ res.first };
+		std::pair<s8, std::string> res{ m_connection.SendCommand("PROCESS GETALLPID") };
+		s8 status{ res.first };
 		if (res.second.find("200 ") == std::string::npos)
 		{
 			return std::make_pair(PS3MAPIError_InvalidResponseCode, processes);
@@ -283,15 +283,15 @@ struct PS3MAPI
 		return std::make_pair(PS3MAPIError_NoError, processes);
 	}
 
-	PS3MAPIError SetupDataSocket()
+	s8 SetupDataSocket()
 	{
-		std::pair<PS3MAPIError, std::string> res{ m_connection.SendCommand("PASV") };
+		std::pair<s8, std::string> res{ m_connection.SendCommand("PASV") };
 		std::string status_message{ "227 Entering Passive Mode (" };	
 		if (size_t status_message_pos{ res.second.find(status_message) }; status_message_pos == std::string::npos)
 		{
 			return PS3MAPIError_InvalidResponseCode;
 		}
-		PS3MAPIError status{ res.first };
+		s8 status{ res.first };
 		std::string status_data{ find_replace(res.second.substr(status_message.size()), "\r\n", {}) };
 		std::string socket_info{ status_data.substr(0, status_data.size()) };
 		std::vector<std::string> data{ split_string(socket_info, ',') };
@@ -303,13 +303,13 @@ struct PS3MAPI
 		return PS3MAPIError_NoError;
 	}
 
-	PS3MAPIError ReadMemory(u64 address, u32 size, void* data)
+	s8 ReadMemory(u64 address, u32 size, void* data)
 	{
 		if (!size || !data || !address)
 		{
 			return PS3MAPIError_Error;
 		}
-		PS3MAPIError status{ SetupDataSocket() };
+		s8 status{ SetupDataSocket() };
 		if (status != PS3MAPIError_NoError)
 		{
 			return status;
@@ -321,13 +321,13 @@ struct PS3MAPI
 			return status;
 		}
 
-		std::pair<PS3MAPIError, std::string> res{ m_connection.SendCommand("MEMORY GET {} {:X} {}", GetAttachedProcess(), address, size) };
+		std::pair<s8, std::string> res{ m_connection.SendCommand("MEMORY GET {} {:X} {}", GetAttachedProcess(), address, size) };
 		if (res.first != PS3MAPIError_NoError)
 		{
 			return res.first;
 		}
 
-		std::pair<PS3MAPIError, int> buffer_response{ m_data_socket.ReceiveBufferedResponse((char*)data, size) };
+		std::pair<s8, int> buffer_response{ m_data_socket.ReceiveBufferedResponse((char*)data, size) };
 		if (buffer_response.first != PS3MAPIError_NoError)
 		{
 			return buffer_response.first;
@@ -340,14 +340,14 @@ struct PS3MAPI
 		return m_data_socket.KillConnection();
 	}
 
-	PS3MAPIError WriteMemory(u64 address, u32 size, const void* data)
+	s8 WriteMemory(u64 address, u32 size, const void* data)
 	{
 		if (!size || !data || !address)
 		{
 			return PS3MAPIError_Error;
 		}
 
-		PS3MAPIError status{ SetupDataSocket() };
+		s8 status{ SetupDataSocket() };
 		if (status != PS3MAPIError_NoError && status != PS3MAPIError_AlreadyConnected)
 		{	   
 			return status;
@@ -359,7 +359,7 @@ struct PS3MAPI
 			return status;
 		}
 
-		std::pair<PS3MAPIError, std::string> res{ m_connection.SendCommand("MEMORY SET {} {:X}", GetAttachedProcess(), address) };
+		std::pair<s8, std::string> res{ m_connection.SendCommand("MEMORY SET {} {:X}", GetAttachedProcess(), address) };
 		if (res.first != PS3MAPIError_NoError)
 		{
 			return res.first;
@@ -373,10 +373,10 @@ struct PS3MAPI
 		return m_data_socket.KillConnection();
 	}
 
-	PS3MAPIError GetTemperature(int* cell, int* rsx)
+	s8 GetTemperature(int* cell, int* rsx)
 	{
-		std::pair<PS3MAPIError, std::string> res{ m_connection.SendCommand("PS3 GETTEMP") };
-		PS3MAPIError status{ res.first };
+		std::pair<s8, std::string> res{ m_connection.SendCommand("PS3 GETTEMP") };
+		s8 status{ res.first };
 		if (res.second.find("200 ") == std::string::npos)
 		{
 			return PS3MAPIError_InvalidResponseCode;
@@ -404,9 +404,9 @@ struct PS3MAPI
 		return status;
 	}
 
-	PS3MAPIError Shutdown(ShutdownAction action)
+	s8 Shutdown(ShutdownAction action)
 	{
-		std::pair<PS3MAPIError, std::string> res{};
+		std::pair<s8, std::string> res{};
 		switch (action)
 		{
 			case ShutdownAction_Shutdown:
@@ -426,25 +426,25 @@ struct PS3MAPI
 				res = m_connection.SendCommand("PS3 REBOOT");
 			} break;
 		}
-		PS3MAPIError status{ res.first };
+		s8 status{ res.first };
 		return status;
 	}
 
-	PS3MAPIError RingBuzzer(BuzzerType type)
+	s8 RingBuzzer(BuzzerType type)
 	{
-		std::pair<PS3MAPIError, std::string> res{ m_connection.SendCommand("PS3 BUZZER{}", static_cast<u32>(type)) };
-		PS3MAPIError status{ res.first };
+		std::pair<s8, std::string> res{ m_connection.SendCommand("PS3 BUZZER{}", static_cast<u32>(type)) };
+		s8 status{ res.first };
 		return status;
 	}
 
-	PS3MAPIError SetConsoleLed(LEDColor color, LEDState state)
+	s8 SetConsoleLed(LEDColor color, LEDState state)
 	{
-		std::pair<PS3MAPIError, std::string> res{ m_connection.SendCommand("PS3 LED {} {}", static_cast<u32>(color), static_cast<u32>(state)) };
-		PS3MAPIError status{ res.first };
+		std::pair<s8, std::string> res{ m_connection.SendCommand("PS3 LED {} {}", static_cast<u32>(color), static_cast<u32>(state)) };
+		s8 status{ res.first };
 		return status;
 	}
 
-	PS3MAPIError SetConsoleIds(ConIdType type, const std::string& id)
+	s8 SetConsoleIds(ConIdType type, const std::string& id)
 	{
 		if (id.size() != 32)
 		{
@@ -452,12 +452,12 @@ struct PS3MAPI
 		}
 		std::string part1{ id.substr(0, 16) }, part2{ id.substr(16, 16) };
 
-		std::pair<PS3MAPIError, std::string> res{ m_connection.SendCommand("PS3 SET{} {} {}", type == ConIdType_IDPS ? "IDPS" : "PSID", part1, part2) };
-		PS3MAPIError status{ res.first };
+		std::pair<s8, std::string> res{ m_connection.SendCommand("PS3 SET{} {} {}", type == ConIdType_IDPS ? "IDPS" : "PSID", part1, part2) };
+		s8 status{ res.first };
 		return status;
 	}
 
-	PS3MAPIError SetConsoleIds(ConIdType type, const ConsoleId* ids)
+	s8 SetConsoleIds(ConIdType type, const ConsoleId* ids)
 	{
 		const ConsoleId id1{ ids[0] }, id2{ ids[1] };
 		std::string id{};
@@ -472,17 +472,17 @@ struct PS3MAPI
 		return SetConsoleIds(type, id);
 	}
 
-	PS3MAPIError VshNotify(NotifyIcon icon, const char* message)
+	s8 VshNotify(NotifyIcon icon, const char* message)
 	{
-		std::pair<PS3MAPIError, std::string> res{ m_connection.SendCommand("PS3 NOTIFY {}&icon={}", message, static_cast<uint8_t>(icon)) };
-		PS3MAPIError status{ res.first };
+		std::pair<s8, std::string> res{ m_connection.SendCommand("PS3 NOTIFY {}&icon={}", message, static_cast<uint8_t>(icon)) };
+		s8 status{ res.first };
 		return status;
 	}
 
-	PS3MAPIError GetFirmware(u32* fw)
+	s8 GetFirmware(u32* fw)
 	{
-		std::pair<PS3MAPIError, std::string> res{ m_connection.SendCommand("PS3 GETFWVERSION") };
-		PS3MAPIError status{ res.first };
+		std::pair<s8, std::string> res{ m_connection.SendCommand("PS3 GETFWVERSION") };
+		s8 status{ res.first };
 		if (res.second.find("200 ") == std::string::npos)
 		{
 			return PS3MAPIError_InvalidResponseCode;
@@ -492,10 +492,10 @@ struct PS3MAPI
 		return status;
 	}
 
-	PS3MAPIError GetVersion(u32* ver)
+	s8 GetVersion(u32* ver)
 	{
-		std::pair<PS3MAPIError, std::string> res{ m_connection.SendCommand("CORE GETVERSION") };
-		PS3MAPIError status{ res.first };
+		std::pair<s8, std::string> res{ m_connection.SendCommand("CORE GETVERSION") };
+		s8 status{ res.first };
 		if (res.second.find("200 ") == std::string::npos)
 		{
 			return PS3MAPIError_InvalidResponseCode;
@@ -505,11 +505,11 @@ struct PS3MAPI
 		return status;
 	}
 
-	std::pair<PS3MAPIError, std::string> GetSystemInfo(u32 op)
+	std::pair<s8, std::string> GetSystemInfo(u32 op)
 	{
 		ConsoleInfo info{}; 
-		std::pair<PS3MAPIError, std::string> res{ m_connection.SendCommand("PS3 GETSYSINFO {}", op)};
-		PS3MAPIError status{ res.first };
+		std::pair<s8, std::string> res{ m_connection.SendCommand("PS3 GETSYSINFO {}", op)};
+		s8 status{ res.first };
 		if (res.second.find("200 ") == std::string::npos)
 		{
 			return std::make_pair(PS3MAPIError_InvalidResponseCode, std::string{});
