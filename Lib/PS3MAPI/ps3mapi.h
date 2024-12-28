@@ -1,5 +1,6 @@
 #pragma once
 // Implementation of https://github.com/aldostools/webMAN-MOD/blob/36ce87a0d26f665f974d3a007a0b6313e346861b/include/ps3mapi/ps3mapi_server.h as a client
+#define _CRT_SECURE_NO_WARNINGS
 #include <string>
 #include <vector>
 #include <format>
@@ -7,144 +8,15 @@
 #include <functional>
 #include <stdexcept>
 #include <iostream>
-#include "ps3mapi_commands.h"
+#include "ps3mapi_types.h"
 #include "socket_helpers.h"
 #include "string_helpers.h"
-#define PS3MAPI_RECV_SIZE 2048
-#define PS3MAPI_CMD_LEN	19
-#define PS3MAPI_MAX_LEN	383
-#define MAX_PID 16 
-
-enum PS3MAPIError : s8
-{
-	PS3MAPIError_Error = -1,
-	PS3MAPIError_NoError,
-	PS3MAPIError_InvalidResponse,
-	PS3MAPIError_InvalidResponseCode,
-	PS3MAPIError_ConnectionFailed,
-	PS3MAPIError_AlreadyConnected,
-	PS3MAPIError_ConnectionClosureFailed,
-	PS3MAPIError_SocketSendFailed,
-	PS3MAPIError_CommandTooLong,
-	PS3MAPIError_BufferTooLarge,
-	PS3MAPIError_BufferTooSmall,
-	PS3MAPIError_SocketBufferEmpty,
-	PS3MAPIError_SocketReceiveFailed,
-	PS3MAPIError_SocketPrematurelyClosed
-};
-enum PS3MAPIResponseCode : s16
-{
-	PS3MAPIResponseCode_RequestSuccessful = 200,
-	PS3MAPIResponseCode_CommandOK = 150,
-	PS3MAPIResponseCode_ConnectionClosed = 221,
-	PS3MAPIResponseCode_SyntaxError = 501,
-	PS3MAPIResponseCode_CommandNotImplemented = 502,
-	PS3MAPIResponseCode_LocalError = 451,
-};
-inline std::string PS3MAPIErrorCodeToString(PS3MAPIError errorCode)
-{
-#define DEF_CASE(err) case PS3MAPIError_##err##: { return #err##; } break;
-#define DEF_SPECIAL_CASE(err, str) case PS3MAPIError_##err##: { return str; } break;
-	switch (errorCode)
-	{
-		DEF_CASE(NoError);
-		DEF_CASE(InvalidResponse);
-		DEF_CASE(InvalidResponseCode);
-		DEF_CASE(ConnectionFailed);
-		DEF_CASE(AlreadyConnected);
-		DEF_CASE(ConnectionClosureFailed);
-		DEF_CASE(SocketSendFailed);
-		DEF_CASE(CommandTooLong);
-		DEF_CASE(BufferTooLarge);
-		DEF_CASE(BufferTooSmall);
-		DEF_CASE(SocketBufferEmpty);
-		DEF_CASE(SocketReceiveFailed);
-		DEF_CASE(SocketPrematurelyClosed);
-		DEF_SPECIAL_CASE(Error, "Unknown error!");
-	}
-	return "Invalid error code!";
-}
-enum ConIdType : u8
-{
-	ConIdType_IDPS,
-	ConIdType_PSID
-};
-enum ConType : u8
-{
-	ConType_Unknown,
-	ConType_Retail, // CEX
-	ConType_Debug,  // DEX
-	ConType_Tool    // TOOL
-};
-enum ShutdownAction : u8
-{
-	ShutdownAction_Shutdown,
-	ShutdownAction_SoftReboot,
-	ShutdownAction_HardReboot,
-	ShutdownAction_ForceReboot
-};
-enum BuzzerType : u8
-{
-	BuzzerType_Continious,
-	BuzzerType_Single,
-	BuzzerType_Double,
-	BuzzerType_Tripple
-};
-enum LEDColor : u8
-{
-	LEDColor_None,
-	LEDColor_Green,
-	LEDColor_Red
-};
-enum LEDState : u8
-{
-	LEDState_Off,
-	LEDState_On,
-	LEDState_BlinkSlow,
-	LEDState_BlinkFast
-};
-enum NotifyIcon : u8
-{
-	NotifyIcon_Info,
-	NotifyIcon_Caution,
-	NotifyIcon_Friend,
-	NotifyIcon_Slider,
-	NotifyIcon_WrongWay,
-	NotifyIcon_Dialog,
-	NotifyIcon_DialogShadow,
-	NotifyIcon_Text,
-	NotifyIcon_Pointer,
-	NotifyIcon_Grab,
-	NotifyIcon_Hand,
-	NotifyIcon_Pen,
-	NotifyIcon_Finger,
-	NotifyIcon_Arrow,
-	NotifyIcon_RightArrow,
-	NotifyIcon_Progress,
-	NotifyIcon_Trophy,
-	NotifyIcon_Trophy2,
-	NotifyIcon_Trophy3,
-	NotifyIcon_Trophy4
-};
-
-class ConsoleId
-{
-public:
-	u8 value[16];
-};
-
-class ConsoleInfo
-{
-public:
-	std::string name{};
-	std::string ip{};
-};
 
 class Connection
 {
 	struct Data
 	{
-		std::string ip{};
+		char ip[17]{};
 		s32 port{};
 		u64 socket{};
 		u16 GetPort()
@@ -154,18 +26,28 @@ class Connection
 		in_addr GetInAddress()
 		{
 			in_addr addr{};
-			addr.S_un.S_addr = inet_addr(ip.c_str());
+			addr.S_un.S_addr = inet_addr(ip);
 			return addr;
 		}
 	};
 public:
-	Connection(const std::string& ip, s32 port = NULL, bool data_socket = false)
-		: m_data({ ip, port }), m_data_socket(data_socket)
-	{}
-	Connection()
-	{}
+	Connection(const char* ip = NULL, s32 port = NULL, bool data_socket = false)
+	{
+		Create(ip, port, data_socket);
+	}
 	~Connection()
 	{}
+	void Create(const char* ip, s16 port, bool data_socket)
+	{
+		size_t ipLen{ strlen(ip) };
+		if (ipLen)
+		{
+			strncpy(m_data.ip, ip, ipLen);
+		}
+		m_data.ip[ipLen + 1] = '\0';
+		m_data.port = port;
+		m_data_socket = data_socket;
+	}
 
 	PS3MAPIError CreateConnection()
 	{
@@ -275,26 +157,36 @@ public:
 	}
 	bool WasOpened()
 	{
-		return !m_data.ip.empty() && m_data_socket;
+		return strlen(m_data.ip) && m_data_socket;
 	}
-private:
+public:
 	Data m_data{};
 	bool m_data_socket{};
 };
 
-struct ProcessInfo
+struct PS3MAPI
 {
-	u32 pid{};
-	std::string name{};
-};
-class PS3MAPI
-{
-public:
-	PS3MAPI(const std::string& ip, uint16_t port = 7887) : m_ip(ip), m_connection(ip, port)
+	PS3MAPI()
+	{}
+	PS3MAPI(const char* ip, uint16_t port = 7887)
 	{
-		m_connection.StartSocket();
+		Create(ip, port);
 	}
 	~PS3MAPI()
+	{
+		Destroy();
+	}
+
+	void Create(const char* ip, uint16_t port)
+	{
+		size_t ipLen{ strlen(ip) };
+		strncpy(m_ip, ip, ipLen);
+		m_ip[ipLen + 1] = '\0';
+		m_connection.Create(ip, port, false);
+		m_connection.StartSocket();
+	}
+
+	void Destroy()
 	{
 		m_connection.KillSocket();
 	}
@@ -313,12 +205,14 @@ public:
 		auto ipSysInfo{ GetSystemInfo(32) };
 		if (ipSysInfo.first != PS3MAPIError_NoError)
 			return std::make_pair(ipSysInfo.first, std::vector<ConsoleInfo>{});
-		std::string ip{ ipSysInfo.second };
+		std::string ipInfo{ ipSysInfo.second };
 		ConsoleInfo info{};
-		if (size_t ip_seperator{ ip.find(" ") }; ip_seperator != std::string::npos)
+		if (size_t ip_seperator{ ipInfo.find(" ") }; ip_seperator != std::string::npos)
 		{
-			info.name = ip.substr(0, ip_seperator);
-			info.ip = ip.substr(0, ip_seperator);
+			std::string name{ ipInfo.substr(0, ip_seperator) };
+			std::string ip{ ipInfo.substr(0, ip_seperator) };
+			strncpy(info.ip, ip.data(), ip.size());
+			strncpy(info.name, name.data(), name.size());
 		}
 		else
 		{
@@ -342,7 +236,7 @@ public:
 		return status;
 	}
 
-	PS3MAPIError GetProcessName(u32 pid, std::string* name)
+	PS3MAPIError GetProcessName(u32 pid, char* name, size_t nameSize)
 	{
 		std::pair<PS3MAPIError, std::string> res{ m_connection.SendCommand("PROCESS GETNAME {}", pid) };
 		PS3MAPIError status{ res.first };
@@ -351,7 +245,7 @@ public:
 			return PS3MAPIError_InvalidResponseCode;
 		}
 		std::string name_str{ find_replace(res.second.substr(4), "\r\n", {}) };
-		*name = name_str;
+		strncpy(name, name_str.c_str(), name_str.size() >= nameSize ? nameSize : name_str.size());
 		return status;
 	}
 
@@ -381,13 +275,14 @@ public:
 			ProcessInfo info{ stoul(pid) };
 			if (info.pid)
 			{
-				GetProcessName(info.pid, &info.name);
+				std::string name{};
+				GetProcessName(info.pid, info.name, sizeof(info.name));
 				processes.push_back(info);
 			}
 		}
 		return std::make_pair(PS3MAPIError_NoError, processes);
 	}
-private:
+
 	PS3MAPIError SetupDataSocket()
 	{
 		std::pair<PS3MAPIError, std::string> res{ m_connection.SendCommand("PASV") };
@@ -404,10 +299,10 @@ private:
 		std::string ip{ std::format("{}.{}.{}.{}", data[0], data[1], data[2], data[3]) };
 		s32 p1x{ stoi(data.at(offset+0)) }, p2x{ stoi(data.at(offset+1)) };
 		s32 port{ ((p1x << 8) + p2x) };
-		m_data_socket = Connection{ ip, port, true };
+		m_data_socket = Connection{ ip.c_str(), port, true};
 		return PS3MAPIError_NoError;
 	}
-public:
+
 	PS3MAPIError ReadMemory(u64 address, u32 size, void* data)
 	{
 		if (!size || !data || !address)
@@ -577,7 +472,7 @@ public:
 		return SetConsoleIds(type, id);
 	}
 
-	PS3MAPIError VshNotify(NotifyIcon icon, const std::string& message)
+	PS3MAPIError VshNotify(NotifyIcon icon, const char* message)
 	{
 		std::pair<PS3MAPIError, std::string> res{ m_connection.SendCommand("PS3 NOTIFY {}&icon={}", message, static_cast<uint8_t>(icon)) };
 		PS3MAPIError status{ res.first };
@@ -631,9 +526,10 @@ public:
 	{
 		m_processId = pid;
 	}
-private:
+
+
 	Connection m_connection{};
 	Connection m_data_socket{};
-	std::string m_ip{};
+	char m_ip[17]{};
 	u32 m_processId{};
 };
