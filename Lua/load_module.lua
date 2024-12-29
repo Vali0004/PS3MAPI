@@ -20,14 +20,14 @@ PS3MAPI_Connect(instance)
 local pid = GetCurrentProcess(instance)
 local process_name = GetProcessName(instance, pid)
 
-if string.find(process_name, 'main_vsh') == false then
-    print('Enter module: (/dev_hdd0/tmp/*.sprx)')
-    module = '/dev_hdd0/tmp/' .. io.read("*l") .. '.sprx'
-    --PS3MAPI_LoadModule(instance);
-    PS3MAPI_RingBuzzer(instance, BuzzerType_Single)
-else
+if string.find(process_name, 'main_vsh') then
     print('Not a valid process!')
     PS3MAPI_RingBuzzer(instance, BuzzerType_Tripple)
+else
+    print('Enter module: (/dev_hdd0/tmp/*.sprx)')
+    module_path = '/dev_hdd0/tmp/' .. io.read("*l") .. '.sprx'
+    PS3MAPI_LoadModule(instance, pid, module_path)
+    PS3MAPI_RingBuzzer(instance, BuzzerType_Single)
 end
 
 PS3MAPI_Disconnect(instance)
