@@ -503,6 +503,28 @@ struct PS3MAPI
 		std::string fw_str{ find_replace(res.second.substr(4), "\r\n", {}) };
 		*ver = static_cast<u32>(stoi(fw_str));
 		return status;
+	} 
+
+	s8 LoadModule(u32 pid, const char* path)
+	{
+		std::pair<s8, std::string> res{ m_connection.SendCommand("MODULE LOAD {} {}", pid, path) };
+		s8 status{ res.first };
+		if (res.second.find("200 ") == std::string::npos)
+		{
+			return PS3MAPIError_InvalidResponseCode;
+		}		
+		return status;
+	} 
+
+	s8 UnloadModule(u32 pid, u32 prx_id)
+	{
+		std::pair<s8, std::string> res{ m_connection.SendCommand("MODULE UNLOAD {} {}", pid, prx_id) };
+		s8 status{ res.first };
+		if (res.second.find("200 ") == std::string::npos)
+		{
+			return PS3MAPIError_InvalidResponseCode;
+		}		
+		return status;
 	}
 
 	std::pair<s8, std::string> GetSystemInfo(u32 op)

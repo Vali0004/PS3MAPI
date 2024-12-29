@@ -120,6 +120,7 @@ s8 PS3MAPI_Connect(struct PS3MAPI* instance);
 s8 PS3MAPI_Disconnect(struct PS3MAPI* instance);
 s8 PS3MAPI_GetConsoles(struct PS3MAPI* instance, ConsoleInfo* consoles, size_t maxConsoles);
 s8 PS3MAPI_GetCurrentProcess(struct PS3MAPI* instance, u32* pid);
+s8 PS3MAPI_GetProcessName(struct PS3MAPI* instance, u32 pid, char* name, size_t nameSize);
 s8 PS3MAPI_GetProcesses(struct PS3MAPI* instance, ProcessInfo* processes, size_t maxProcesses);
 s8 PS3MAPI_ReadMemory(struct PS3MAPI* instance, u64 address, u32 size, void* data);
 s8 PS3MAPI_WriteMemory(struct PS3MAPI* instance, u64 address, u32 size, const void* data);
@@ -132,6 +133,8 @@ s8 PS3MAPI_VshNotify(struct PS3MAPI* instance, NotifyIcon icon, const char* mess
 s8 PS3MAPI_GetFirmware(struct PS3MAPI* instance, u32* fw);
 s8 PS3MAPI_GetVersion(struct PS3MAPI* instance, u32* ver);
 s8 PS3MAPI_GetSystemInfo(struct PS3MAPI* instance, u32 op, char* data, size_t dataSize);
+s8 PS3MAPI_LoadModule(struct PS3MAPI* instance, u32 pid, const char* path);
+s8 PS3MAPI_UnoadModule(struct PS3MAPI* instance, u32 pid, u32 prx_id);
 u32 PS3MAPI_GetAttachedProcess(struct PS3MAPI* instance);
 void PS3MAPI_AttachProcess(struct PS3MAPI* instance, u32 pid);
 ]])
@@ -226,6 +229,9 @@ end
 function PS3MAPI_GetCurrentProcess(instance, pid)
     return PS3MAPI.PS3MAPI_GetCurrentProcess(instance, pid)
 end
+function PS3MAPI_GetProcessName(instance, pid, name, nameSize)
+    return PS3MAPI.PS3MAPI_GetProcessName(instance, pid, name, nameSize)
+end
 function PS3MAPI_GetProcesses(instance, processes, maxProcesses)
     return PS3MAPI.PS3MAPI_GetProcesses(instance, processes, maxProcesses)
 end
@@ -261,6 +267,12 @@ function PS3MAPI_GetVersion(instance, ver)
 end
 function PS3MAPI_GetSystemInfo(instance, op, data, dataSize)
     return PS3MAPI.PS3MAPI_GetSystemInfo(instance, op, data, dataSize)
+end
+function PS3MAPI_LoadModule(instance, pid, path)
+    return PS3MAPI.PS3MAPI_LoadModule(instance, pid, path)
+end
+function PS3MAPI_UnloadModule(instance, pid, prx_id)
+    return PS3MAPI.PS3MAPI_UnloadModule(instance, pid, prx_id)
 end
 function PS3MAPI_GetAttachedProcess(instance)
     PS3MAPI.PS3MAPI_GetAttachedProcess(instance)

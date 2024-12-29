@@ -13,6 +13,7 @@ extern "C" {
 	EXPORT s8 PS3MAPI_Disconnect(struct PS3MAPI* instance);
 	EXPORT s8 PS3MAPI_GetConsoles(struct PS3MAPI* instance, ConsoleInfo* consoles, size_t maxConsoles);
 	EXPORT s8 PS3MAPI_GetCurrentProcess(struct PS3MAPI* instance, u32* pid);
+	EXPORT s8 PS3MAPI_GetProcessName(struct PS3MAPI* instance, u32 pid, char* name, size_t nameSize);
 	EXPORT s8 PS3MAPI_GetProcesses(struct PS3MAPI* instance, ProcessInfo* processes, size_t maxProcesses);
 	EXPORT s8 PS3MAPI_ReadMemory(struct PS3MAPI* instance, u64 address, u32 size, void* data);
 	EXPORT s8 PS3MAPI_WriteMemory(struct PS3MAPI* instance, u64 address, u32 size, const void* data);
@@ -25,6 +26,8 @@ extern "C" {
 	EXPORT s8 PS3MAPI_GetFirmware(struct PS3MAPI* instance, u32* fw);
 	EXPORT s8 PS3MAPI_GetVersion(struct PS3MAPI* instance, u32* ver);
 	EXPORT s8 PS3MAPI_GetSystemInfo(struct PS3MAPI* instance, u32 op, char* data, size_t dataSize);
+	EXPORT s8 PS3MAPI_LoadModule(struct PS3MAPI* instance, u32 pid, const char* path);
+	EXPORT s8 PS3MAPI_UnoadModule(struct PS3MAPI* instance, u32 pid, u32 prx_id);
 	EXPORT u32 PS3MAPI_GetAttachedProcess(struct PS3MAPI* instance);
 	EXPORT void PS3MAPI_AttachProcess(struct PS3MAPI* instance, u32 pid);
 #ifdef __cplusplus
@@ -139,6 +142,14 @@ extern "C" {
 		strncpy(data, info.c_str(), info.size() >= dataSize ? dataSize : info.size());
 		return res.first;
 	}
+	EXPORT s8 PS3MAPI_LoadModule(struct PS3MAPI* instance, u32 pid, const char* path)
+	{
+		return instance->LoadModule(pid, path);
+	}
+	EXPORT s8 PS3MAPI_UnloadModule(struct PS3MAPI* instance, u32 pid, u32 prx_id)
+	{
+		return instance->UnloadModule(pid, prx_id);
+	} 
 	EXPORT u32 PS3MAPI_GetAttachedProcess(struct PS3MAPI* instance)
 	{
 		return instance->GetAttachedProcess();
