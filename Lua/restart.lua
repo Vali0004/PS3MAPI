@@ -1,8 +1,8 @@
 local ffi = require('ffi')
-require('ps3mapi')
+require('Modules\\ps3mapi')
+require('Modules\\util')
 
-print('Enter your console ip: ')
-ip = io.read("*l")
+ip = GetIPInput()
 
 local instance = PS3MAPI_CreateInstance(ip, 7887)
 PS3MAPI_Connect(instance)
