@@ -1,31 +1,19 @@
 local ffi = require('ffi')
-require('ps3mapi')
+require('Modules\\ps3mapi')
+require('Modules\\util')
 
-print('Enter your console ip: ')
-ip = io.read("*l")
-
-function GetCurrentProcess(instance)
-    local pid_ptr = ffi.new("unsigned int[1]")
-    PS3MAPI_GetCurrentProcess(instance, pid_ptr)
-    return pid_ptr[0]
-end
-function GetProcessName(instance, pid)
-    local process_name_buf = ffi.new("char[64]")
-    PS3MAPI_GetProcessName(instance, pid, process_name_buf, 64)
-    return ffi.string(process_name_buf, 64)
-end
+ip = GetIPInput()
 
 local instance = PS3MAPI_CreateInstance(ip, 7887)
 PS3MAPI_Connect(instance)
 local pid = GetCurrentProcess(instance)
 local process_name = GetProcessName(instance, pid)
-
 if string.find(process_name, 'main_vsh') then
     print('Not a valid process!')
     PS3MAPI_RingBuzzer(instance, BuzzerType_Tripple)
 else
     print('Enter module: (/dev_hdd0/tmp/*.sprx)')
-    local module_name = io.read("*l")
+    local module_name = io.read('*l')
     local module_path = '/dev_hdd0/tmp/' .. module_name .. '.sprx'
     print('Module path: ' .. module_path)
     PS3MAPI_LoadModule(instance, pid, module_path)
